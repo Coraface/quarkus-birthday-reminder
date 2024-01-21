@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Person CRUD</title>
+</head>
+<body>
+<h1>Person CRUD</h1>
+
+<div>
+    <h2>Add Person</h2>
+    <label for="first_name">First name:</label>
+    <input type="text" id="first_name">
+    <label for="last_name">Last name:</label>
+    <input type="text" id="last_name">
+    <label for="birthday">Birthday:</label>
+    <input type="text" id="birthday">
+    <label for="age">Age:</label>
+    <input type="number" id="age">
+    <button onclick="addPerson()">Add Person</button>
+</div>
+
+<div>
+    <h2>Delete Person</h2>
+    <label for="id">Age:</label>
+    <input type="number" id="id">
+    <button onclick="deletePerson()">Delete Person</button>
+</div>
+
+<div>
+    <h2>All Persons</h2>
+    <ul id="personsList"></ul>
+</div>
+
+<script>
+    async function addPerson() {
+        const firstName = document.getElementById('first_name').value;
+        const lastName = document.getElementById('last_name').value;
+        const birthday = document.getElementById('birthday').value;
+        const age = document.getElementById('age').value;
+
+        await fetch('/persons', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ firstName, lastName, birthday, age }),
+        });
+
+        // Refresh the list after adding a person
+        await getAllPersons();
+    }
+
+    async function deletePerson() {
+        const id = document.getElementById('id').value;
+
+        try {
+            const response = await fetch(`/persons/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                alert('Person deleted successfully');
+                // Refresh the list after adding a person
+                await getAllPersons();
+            } else {
+                alert('Failed to delete person. Please check the person ID.');
+            }
+        } catch (error) {
+            console.error('Error deleting person:', error);
+            alert('An error occurred while deleting the person.');
+        }
+    }
+
+    async function getAllPersons() {
+        const response = await fetch('/persons');
+        const persons = await response.json();
+
+        const personsList = document.getElementById('personsList');
+        personsList.innerHTML = '';
+
+        persons.forEach(person => {
+            const li = document.createElement('li');
+            li.textContent = `${person.firstName} ${person.lastName} - ${person.birthday} - ID: ${person.id}`;
+            personsList.appendChild(li);
+        });
+    }
+
+    // Initial load of persons
+    getAllPersons();
+</script>
+</body>
+</html>
